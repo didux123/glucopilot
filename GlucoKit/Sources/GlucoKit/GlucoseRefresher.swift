@@ -113,12 +113,19 @@ public actor GlucoseRefresher {
         sessionRegion = nil
     }
 
-    public func update(settings: GlucoSettings) {
-        store.save(settings: settings)
-        if settings.region != sessionRegion {
+    @discardableResult
+    public func update(settings: GlucoSettings) -> GlucoSnapshot {
+        let sanitized = settings.sanitized
+        store.save(settings: sanitized)
+        if sanitized.region != sessionRegion {
             session = nil
             sessionRegion = nil
         }
+        // La photo en cache embarque les seuils : sans cette réécriture, le
+        // widget continuerait d'évaluer la mesure courante avec les anciens.
+        var snapshot = cachedSnapshot()
+        snapshot.settings = sanitized
+        return persist(snapshot)
     }
 
     // MARK: - Interne
