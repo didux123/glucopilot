@@ -28,3 +28,6 @@ Package.resolved
 
 # Projet généré par XcodeGen à partir de project.yml
 GlucoPilot.xcodeproj/
+
+# Team ID, propre à la machine
+Config/Local.xcconfig

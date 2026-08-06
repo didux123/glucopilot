@@ -57,10 +57,26 @@ final class TripController: NSObject {
     /// À appeler au démarrage de l'app, y compris quand iOS la relance en
     /// tâche de fond après un déplacement.
     func startIfConfigured() {
+        #if DEBUG
+        // `-trip` : entre en mode trajet sans attendre CarPlay. Indispensable
+        // pour le simulateur CarPlay, qui n'est qu'un second écran et ne
+        // fournit aucune route audio `carAudio` — la détection réelle ne peut
+        // donc pas s'y déclencher.
+        if Self.forcesTrip {
+            beginTrip()
+            return
+        }
+        #endif
         guard credentialStore.load() != nil else { return }
         beginMonitoring()
         evaluateCarPlay()
     }
+
+    #if DEBUG
+    static var forcesTrip: Bool {
+        ProcessInfo.processInfo.arguments.contains("-trip")
+    }
+    #endif
 
     /// À appeler après une connexion réussie : demande l'autorisation puis
     /// enclenche la surveillance.
@@ -123,10 +139,18 @@ final class TripController: NSObject {
         isTripActive = true
 
         // Localisation continue : c'est elle qui empêche iOS de nous suspendre
-        // pendant le trajet.
-        manager.allowsBackgroundLocationUpdates =
-            manager.authorizationStatus == .authorizedAlways
-        manager.startUpdatingLocation()
+        // pendant le trajet. Inutile — et intrusive — quand le trajet est
+        // forcé pour un essai.
+        #if DEBUG
+        let usesLocation = !Self.forcesTrip
+        #else
+        let usesLocation = true
+        #endif
+        if usesLocation {
+            manager.allowsBackgroundLocationUpdates =
+                manager.authorizationStatus == .authorizedAlways
+            manager.startUpdatingLocation()
+        }
 
         pollTask = Task { [weak self] in
             await self?.runTripLoop()
@@ -148,10 +172,16 @@ final class TripController: NSObject {
 
     private func runTripLoop() async {
         while !Task.isCancelled {
-            let snapshot = await GlucoseRefresher.shared.refresh()
-            await publish(snapshot)
+            await publish(currentSnapshot())
             try? await Task.sleep(for: Self.pollInterval)
         }
+    }
+
+    private func currentSnapshot() async -> GlucoSnapshot {
+        #if DEBUG
+        if let demoState = AppModel.demoState { return .demo(state: demoState) }
+        #endif
+        return await GlucoseRefresher.shared.refresh()
     }
 
     // MARK: - Live Activity

@@ -53,9 +53,22 @@ brew install xcodegen && xcodegen generate && open GlucoPilot.xcodeproj
 Le `.xcodeproj` est généré depuis `project.yml` et n'est pas versionné :
 relancez `xcodegen generate` après tout ajout de fichier.
 
-Le **Team ID n'est pas dans le dépôt** (il est propre à la machine) : à
-renseigner une fois dans Xcode, onglet *Signing & Capabilities*, sur les deux
-cibles.
+Le **Team ID n'est pas dans le dépôt** (il est propre à la machine) :
+
+```bash
+cp Config/Local.xcconfig.example Config/Local.xcconfig   # puis renseigner le Team ID
+```
+
+Passer par un xcconfig plutôt que par l'interface de Xcode permet au réglage de
+survivre à chaque `xcodegen generate`.
+
+Installer sur un iPhone branché :
+
+```bash
+xcodebuild -project GlucoPilot.xcodeproj -scheme GlucoPilot -destination "platform=iOS,id=$(xcrun xctrace list devices | grep -m1 -oE '\(([0-9A-F]{8}-[0-9A-F]{16})\)' | tr -d '()')" -allowProvisioningUpdates build
+```
+
+puis `xcrun devicectl device install app --device <UDID> <chemin>/GlucoPilot.app`.
 
 Tests de la couche Dexcom :
 

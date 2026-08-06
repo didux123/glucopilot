@@ -12,16 +12,20 @@ packages:
   GlucoKit:
     path: GlucoKit
 
+# Le Team ID n'est pas dans le dépôt : il est propre à la machine. Copier
+# Config/Local.xcconfig.example en Config/Local.xcconfig et le renseigner.
+# Passer par un xcconfig plutôt que par project.yml permet au réglage de
+# survivre à chaque `xcodegen generate`.
+configFiles:
+  Debug: Config/Local.xcconfig
+  Release: Config/Local.xcconfig
+
 settings:
   base:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
     CODE_SIGN_STYLE: Automatic
-    # Le Team ID n'est pas dans le dépôt : il est propre à la machine.
-    # À renseigner une fois dans Xcode (onglet Signing & Capabilities), ou via
-    # un Config/Local.xcconfig local.
-    DEVELOPMENT_TEAM: ""
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_STRICT_CONCURRENCY: complete
 
