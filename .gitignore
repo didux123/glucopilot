@@ -1,0 +1,27 @@
+# Secrets — rien de sensible ne doit jamais entrer dans le dépôt ni dans le binaire
+Secrets.xcconfig
+*.p8
+*.p12
+*.mobileprovision
+secrets.json
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# macOS
+.DS_Store
