@@ -13,6 +13,7 @@ public final class SharedStore: SessionStateStore, @unchecked Sendable {
         static let snapshot = "snapshot"
         static let settings = "settings"
         static let session = "sessionState"
+        static let tripStartedAt = "tripStartedAt"
     }
 
     private let defaults: UserDefaults
@@ -56,6 +57,16 @@ public final class SharedStore: SessionStateStore, @unchecked Sendable {
 
     public func saveSessionState(_ state: SessionState) {
         encode(state, forKey: Key.session)
+    }
+
+    // MARK: - Trajet en cours
+
+    /// Début de la Live Activity du trajet. Persisté plutôt que gardé en
+    /// mémoire : l'app est relancée en tâche de fond pendant le trajet, et il
+    /// faut pouvoir savoir qu'on approche du plafond des 8 h d'ActivityKit.
+    public var tripStartedAt: Date? {
+        get { defaults.object(forKey: Key.tripStartedAt) as? Date }
+        set { defaults.set(newValue, forKey: Key.tripStartedAt) }
     }
 
     // MARK: - Codage

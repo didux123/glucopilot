@@ -5,5 +5,6 @@ import WidgetKit
 struct GlucoPilotWidgetsBundle: WidgetBundle {
     var body: some Widget {
         GlucoseWidget()
+        GlucoseLiveActivity()
     }
 }

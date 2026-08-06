@@ -29,9 +29,62 @@ anti-verrouillage de compte.
 L'API officielle `developer.dexcom.com` est écartée : ses données sont retardées
 de 3 h hors USA, par exigence réglementaire — inutilisable au volant.
 
+## Mise à jour sans serveur
+
+Tout se passe sur l'iPhone, il n'y a rien à héberger. Trois régimes :
+
+| Situation | Mécanisme | Fraîcheur |
+|---|---|---|
+| En voiture | Réveil par déplacement significatif, puis localisation continue (3 km de précision — on ne veut pas la position, juste rester vivant) | 60 s |
+| App fermée | L'extension widget interroge Dexcom dans sa propre timeline | 20 à 30 min (budget WidgetKit) |
+| App ouverte | Boucle de premier plan | 60 s |
+
+Conséquence assumée : si l'app était suspendue au moment où vous branchez le
+téléphone, la Live Activity n'apparaît qu'après les premières centaines de
+mètres. C'est le prix du zéro-serveur — si ça gêne, la bascule vers un backend
+poussant en APNs se fait sans rien changer à l'affichage.
+
+## Construire
+
+```bash
+brew install xcodegen && xcodegen generate && open GlucoPilot.xcodeproj
+```
+
+Le `.xcodeproj` est généré depuis `project.yml` et n'est pas versionné :
+relancez `xcodegen generate` après tout ajout de fichier.
+
+Le **Team ID n'est pas dans le dépôt** (il est propre à la machine) : à
+renseigner une fois dans Xcode, onglet *Signing & Capabilities*, sur les deux
+cibles.
+
+Tests de la couche Dexcom :
+
+```bash
+cd GlucoKit && swift test
+```
+
+Aucun test n'appelle Dexcom pour de vrai — un compte Share se verrouille au
+bout de quelques tentatives ratées.
+
+## Mode démo
+
+En Debug, pour regarder à quoi ressemble une hypo à l'écran sans attendre d'en
+faire une :
+
+```bash
+xcrun simctl launch booted com.didux.glucopilot -demo hypo
+```
+
+États : `ok`, `hyper`, `hyperSevere`, `hypo`, `imminentHypo`, `stale`.
+`-gallery` affiche les deux surfaces CarPlay dans tous leurs états à la taille
+réelle (aussi accessible depuis *Réglages → Aperçu du widget*).
+
 ## Statut
 
-Recherche de faisabilité terminée. Plan d'implémentation en cours.
+Les cinq étapes sont écrites et compilent : couche Dexcom (46 tests), app,
+widget, Live Activity, Siri. **Reste la validation en voiture réelle** —
+téléphone verrouillé, Live Activity qui démarre seule, mise à jour pendant le
+trajet, et relevé de consommation batterie sur une heure.
 
 ## Sécurité
 

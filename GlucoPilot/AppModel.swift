@@ -93,11 +93,15 @@ final class AppModel {
         }
         reloadIdentity()
         settings = store.loadSettings()
+        // C'est maintenant qu'on demande la localisation : après la connexion,
+        // quand l'utilisateur comprend à quoi elle sert.
+        TripController.shared.enable()
         await refresh(force: true)
         return .success
     }
 
     func signOut() async {
+        TripController.shared.disable()
         await refresher.signOut()
         reloadIdentity()
         snapshot = GlucoSnapshot(settings: settings)
