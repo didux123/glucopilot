@@ -36,6 +36,7 @@ targets:
           - "GlucoPilot.entitlements"
     dependencies:
       - package: GlucoKit
+      - target: GlucoPilotWidgets
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.didux.glucopilot
@@ -77,5 +78,42 @@ targets:
       properties:
         com.apple.security.application-groups:
           - group.com.didux.glucopilot
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)com.didux.glucopilot.shared
+
+  # Widget et Live Activity : les deux surfaces qui s'affichent dans CarPlay.
+  # Aucun entitlement CarPlay n'est requis — c'est tout l'intérêt de passer par
+  # WidgetKit et ActivityKit plutôt que par une app CarPlay.
+  GlucoPilotWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: GlucoPilotWidgets
+        excludes:
+          - "Info.plist"
+          - "GlucoPilotWidgets.entitlements"
+    dependencies:
+      - package: GlucoKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.didux.glucopilot.widgets
+        PRODUCT_NAME: GlucoPilotWidgets
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "1"
+    info:
+      path: GlucoPilotWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: GlucoPilot
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: GlucoPilotWidgets/GlucoPilotWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.didux.glucopilot
+        # Même groupe, déclaré en premier des deux côtés : c'est ce qui permet
+        # à l'extension de lire les identifiants écrits par l'app.
         keychain-access-groups:
           - $(AppIdentifierPrefix)com.didux.glucopilot.shared

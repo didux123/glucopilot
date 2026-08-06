@@ -1,15 +1,20 @@
 import Charts
-import GlucoKit
 import SwiftUI
 
 /// Courbe des 3 dernières heures, avec les seuils en repères.
 ///
 /// C'est cette vue qui part aussi dans le widget : on y lit la direction d'un
 /// coup d'œil, ce qu'un simple chiffre ne dit pas.
-struct GlucoseChartView: View {
+public struct GlucoseChartView: View {
     let readings: [GlucoseReading]
     let settings: GlucoSettings
-    var showsAxes = true
+    let showsAxes: Bool
+
+    public init(readings: [GlucoseReading], settings: GlucoSettings, showsAxes: Bool = true) {
+        self.readings = readings
+        self.settings = settings
+        self.showsAxes = showsAxes
+    }
 
     private var yDomain: ClosedRange<Int> {
         let values = readings.map(\.mgdl)
@@ -29,7 +34,7 @@ struct GlucoseChartView: View {
         return min(start, end.addingTimeInterval(-3600))...end
     }
 
-    var body: some View {
+    public var body: some View {
         Chart {
             RuleMark(y: .value("Seuil hyper", settings.hyper))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))

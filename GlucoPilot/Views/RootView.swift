@@ -5,15 +5,31 @@ struct RootView: View {
     @State private var model = AppModel()
 
     var body: some View {
-        Group {
-            if model.isSignedIn {
-                DashboardView()
-            } else {
-                OnboardingView()
-            }
+        content
+            .environment(model)
+            .task { await model.start() }
+            .task { await model.runForegroundLoop() }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-gallery") {
+            NavigationStack { WidgetGalleryView() }
+        } else {
+            main
         }
-        .environment(model)
-        .task { await model.start() }
-        .task { await model.runForegroundLoop() }
+        #else
+        main
+        #endif
+    }
+
+    @ViewBuilder
+    private var main: some View {
+        if model.isSignedIn {
+            DashboardView()
+        } else {
+            OnboardingView()
+        }
     }
 }

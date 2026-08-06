@@ -22,17 +22,31 @@ extension GlucoSnapshot {
         case .stale: (142, .flat)
         }
 
-        // 36 mesures sur 3 h, une toutes les 5 min, qui convergent vers la
-        // valeur visée avec une ondulation crédible.
+        // Pente impliquée par la flèche, en mg/dL par pas de 5 min. Sans elle,
+        // l'ondulation dominerait et le delta afficherait « -3 » sous une
+        // flèche montante — exactement le genre d'incohérence qui décrédibilise
+        // un aperçu.
+        let slope: Double = switch trend {
+        case .doubleUp: 12
+        case .singleUp: 8
+        case .fortyFiveUp: 4
+        case .fortyFiveDown: -4
+        case .singleDown: -8
+        case .doubleDown: -12
+        default: 0
+        }
+
+        // 36 mesures sur 3 h, une toutes les 5 min. L'ondulation s'annule au
+        // pas 0 pour que la valeur courante soit exactement celle visée.
         let readings = (0..<36).map { step -> GlucoseReading in
-            let age = Double(step) * 300
-            let drift = Double(step) * (state == .hypo || state == .imminentHypo ? 2.2 : -1.4)
-            let wave = sin(Double(step) / 2.6) * 11
-            let mgdl = max(40, min(400, Int((Double(target) + drift + wave).rounded())))
+            let wave = (cos(Double(step) / 2.6) - 1) * 6
+            let mgdl = Double(target) - slope * Double(step) + wave
             return GlucoseReading(
-                mgdl: step == 0 ? target : mgdl,
+                mgdl: max(40, min(400, Int(mgdl.rounded()))),
                 trend: step == 0 ? trend : .flat,
-                date: now.addingTimeInterval(-age - (state == .stale ? 22 * 60 : 0))
+                date: now.addingTimeInterval(
+                    -Double(step) * 300 - (state == .stale ? 22 * 60 : 0)
+                )
             )
         }
 

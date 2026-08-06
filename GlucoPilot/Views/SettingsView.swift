@@ -48,6 +48,12 @@ struct SettingsView: View {
                     Button("Se déconnecter", role: .destructive) { confirmsSignOut = true }
                 }
 
+                #if DEBUG
+                Section("Développement") {
+                    NavigationLink("Aperçu du widget") { WidgetGalleryView() }
+                }
+                #endif
+
                 Section {
                     Text(
                         """
