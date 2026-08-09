@@ -36,6 +36,35 @@ struct SettingsView: View {
                     )
                 }
 
+                Section {
+                    LabeledContent("CarPlay") {
+                        Text(TripController.shared.isCarPlayConnected ? "Connecté" : "Non connecté")
+                            .foregroundStyle(.secondary)
+                    }
+                    if TripController.shared.isTripActive {
+                        Button("Arrêter le trajet", role: .destructive) {
+                            TripController.shared.stopTripManually()
+                        }
+                    } else {
+                        Button("Démarrer le trajet maintenant") {
+                            TripController.shared.startTripManually()
+                        }
+                    }
+                } header: {
+                    Text("Trajet")
+                } footer: {
+                    Text(
+                        """
+                        La Live Activity s'affiche sur le Dashboard CarPlay \
+                        tant qu'un trajet est en cours — il n'y a rien à y \
+                        ajouter. Elle démarre seule à la connexion CarPlay ; \
+                        ce bouton sert quand la détection tarde, le réveil par \
+                        déplacement pouvant prendre quelques centaines de \
+                        mètres.
+                        """
+                    )
+                }
+
                 Section("Compte") {
                     if let accountName = model.accountName {
                         LabeledContent("Dexcom", value: accountName)

@@ -3,6 +3,7 @@ import AVFAudio
 import CoreLocation
 import GlucoKit
 import Observation
+import UIKit
 
 /// Pilote la Live Activity sur la durée d'un trajet, sans serveur.
 ///
@@ -40,6 +41,9 @@ final class TripController: NSObject {
     private let store: SharedStore
     private var pollTask: Task<Void, Never>?
     private var isMonitoring = false
+    /// Trajet démarré à la main : il ne doit pas être coupé par une
+    /// réévaluation qui ne voit pas CarPlay.
+    private var isManualTrip = false
 
     private(set) var isTripActive = false
 
@@ -109,25 +113,56 @@ final class TripController: NSObject {
             object: nil
         )
 
+        // Sans ceci, brancher CarPlay puis ouvrir l'app ne déclenchait rien :
+        // le changement de route audio a lieu pendant que l'app est suspendue,
+        // et plus personne ne réévalue ensuite.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+
         manager.startMonitoringSignificantLocationChanges()
+    }
+
+    // MARK: - Commande manuelle
+
+    /// Démarre le trajet sans attendre CarPlay. Utile quand la détection tarde
+    /// — le réveil par déplacement peut prendre quelques centaines de mètres.
+    func startTripManually() {
+        isManualTrip = true
+        beginMonitoring()
+        beginTrip()
+    }
+
+    func stopTripManually() {
+        isManualTrip = false
+        endTrip()
+    }
+
+    /// Exposé à l'interface pour expliquer à l'utilisateur ce que voit l'app.
+    var isCarPlayConnected: Bool {
+        AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .carAudio }
     }
 
     // MARK: - Détection CarPlay
 
-    /// CarPlay se reconnaît à son port de sortie audio. C'est la seule
-    /// détection possible sans entitlement CarPlay.
-    private var isCarPlayConnected: Bool {
-        AVAudioSession.sharedInstance().currentRoute.outputs.contains { $0.portType == .carAudio }
-    }
+    // CarPlay se reconnaît à son port de sortie audio (`isCarPlayConnected`
+    // plus haut). C'est la seule détection possible sans entitlement CarPlay.
 
     @objc private nonisolated func audioRouteChanged(_ notification: Notification) {
+        Task { @MainActor in self.evaluateCarPlay() }
+    }
+
+    @objc private nonisolated func appDidBecomeActive(_ notification: Notification) {
         Task { @MainActor in self.evaluateCarPlay() }
     }
 
     private func evaluateCarPlay() {
         if isCarPlayConnected {
             beginTrip()
-        } else {
+        } else if !isManualTrip {
             endTrip()
         }
     }
