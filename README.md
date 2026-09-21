@@ -1,5 +1,15 @@
 # GlucoPilot
 
+> **🧪 Proof of concept.** Projet personnel exploratoire, publié pour partager
+> l'approche technique. Pas de support, pas de garantie de maintenance ni de
+> compatibilité ascendante — ce n'est pas un produit fini.
+>
+> ⚠️ **Avertissement médical.** Outil de **confort** uniquement, ce n'est **pas
+> un dispositif médical**. Il s'appuie sur l'API **non officielle** Dexcom
+> Share, qui peut tomber, renvoyer des valeurs périmées ou être coupée sans
+> préavis. Les alarmes de l'application Dexcom officielle restent la seule
+> référence. Ne fondez aucune décision thérapeutique sur cet affichage.
+
 Sa glycémie sur l'écran de la voiture, en un coup d'œil.
 
 App iOS qui lit la glycémie temps réel via l'API **Dexcom Share** et l'affiche

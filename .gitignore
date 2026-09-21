@@ -31,3 +31,10 @@ GlucoPilot.xcodeproj/
 
 # Team ID, propre à la machine
 Config/Local.xcconfig
+
+# Secrets et config locale
+.env
+.env.*
+!.env.example
+*.xcconfig
+!Config/*.example.xcconfig
